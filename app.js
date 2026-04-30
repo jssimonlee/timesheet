@@ -23,10 +23,8 @@ const holidayNameInput = document.querySelector("#holiday-name");
 const addHolidayButton = document.querySelector("#add-holiday");
 const resetButton = document.querySelector("#reset-button");
 const holidayList = document.querySelector("#holiday-list");
-const summaryList = document.querySelector("#summary-list");
 const documentPreview = document.querySelector("#document-preview");
 const message = document.querySelector("#message");
-const templateStatus = document.querySelector("#template-status");
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -84,12 +82,6 @@ function selectedWorkDays() {
 function setMessage(text, isError = false) {
   message.textContent = text;
   message.classList.toggle("error", isError);
-}
-
-function setStatus(text, status) {
-  templateStatus.textContent = text;
-  templateStatus.classList.remove("ready", "error");
-  if (status) templateStatus.classList.add(status);
 }
 
 function setDefaultDates() {
@@ -155,6 +147,22 @@ function createPreviewRow(table, cells) {
   }
   table.append(row);
   return row;
+}
+
+function appendMergedSpacerRow(table) {
+  const row = document.createElement("tr");
+  row.className = "merged-spacer-row";
+  table.append(row);
+  return row;
+}
+
+function previewFooterCells(labelText, signatureText) {
+  return [
+    { text: "", className: "blank-cell", colSpan: 4 },
+    { text: labelText, className: "footer-cell", colSpan: 5 },
+    { text: signatureText, className: "footer-cell signature-cell", colSpan: 4 },
+    { text: "", className: "blank-cell", colSpan: 4 },
+  ];
 }
 
 function previewMonthData() {
@@ -228,27 +236,26 @@ function appendDayBand(table, startDay, data) {
   if (tailBlankCount) endCells.push({ text: "", className: "blank-cell" });
   createPreviewRow(table, endCells);
 
-  const signCells = [{ text: "서\n\n명", className: "side-label", rowSpan: 3 }, { text: "근\n로\n자", className: "side-label", rowSpan: 3 }];
+  const signCells = [{ text: "서\n\n명", className: "side-label", rowSpan: 5 }, { text: "근", className: "side-label worker-char-cell worker-char-top" }];
   for (const day of dayNumbers) {
-    signCells.push(previewDayCell(day, data, "sign"));
+    signCells.push({ ...previewDayCell(day, data, "sign"), rowSpan: 3 });
   }
-  if (tailBlankCount) signCells.push({ text: "", className: "blank-cell" });
-  createPreviewRow(table, signCells);
+  if (tailBlankCount) signCells.push({ text: "", className: "blank-cell", rowSpan: 3 });
+  const signRow = createPreviewRow(table, signCells);
+  signRow.classList.add("worker-char-row");
 
-  for (let i = 0; i < 2; i += 1) {
-    const row = document.createElement("tr");
-    for (let c = 0; c < dayNumbers.length + tailBlankCount; c += 1) {
-      addPreviewCell(row, "");
-    }
-    table.append(row);
-  }
+  const workerMiddleRow = createPreviewRow(table, [{ text: "로", className: "side-label worker-char-cell worker-char-middle" }]);
+  workerMiddleRow.classList.add("worker-char-row");
+  const workerBottomRow = createPreviewRow(table, [{ text: "자", className: "side-label worker-char-cell worker-char-bottom" }]);
+  workerBottomRow.classList.add("worker-char-row");
 
-  const confirmCells = [{ text: "확\n인", className: "side-label", colSpan: 2 }];
+  const confirmCells = [{ text: "확\n인", className: "side-label", rowSpan: 2 }];
   for (const day of dayNumbers) {
-    confirmCells.push({ text: day <= data.lastDay ? "" : "", className: "time-cell" });
+    confirmCells.push({ text: day <= data.lastDay ? "" : "", className: "time-cell", rowSpan: 2 });
   }
-  if (tailBlankCount) confirmCells.push({ text: "", className: "blank-cell" });
+  if (tailBlankCount) confirmCells.push({ text: "", className: "blank-cell", rowSpan: 2 });
   createPreviewRow(table, confirmCells);
+  appendMergedSpacerRow(table);
 
   table.rows[rowStart].dataset.band = String(startDay);
 }
@@ -286,51 +293,26 @@ function renderDocumentPreview() {
   appendDayBand(table, 21, data);
 
   createPreviewRow(table, [{ text: "", className: "blank-cell", colSpan: 17 }]);
-  createPreviewRow(table, [
-    { text: "", className: "blank-cell", colSpan: 7 },
-    { text: `작성자: ${libraryNameInput.value.trim() || "작성도서관"}  ${writerNameInput.value.trim() || "작성자"} (인)`, className: "footer-cell", colSpan: 6 },
-    { text: "", className: "blank-cell", colSpan: 4 },
-  ]);
+  createPreviewRow(
+    table,
+    previewFooterCells(
+      `작성자: ${libraryNameInput.value.trim() || "작성도서관"}`,
+      `${writerNameInput.value.trim() || "작성자"} (인)`
+    )
+  );
   createPreviewRow(table, [{ text: "", className: "blank-cell", colSpan: 17 }]);
-  createPreviewRow(table, [
-    { text: "", className: "blank-cell", colSpan: 7 },
-    { text: `확인자: ${checkerLibraryInput.value.trim() || "확인자 도서관"} 관장  ${checkerNameInput.value.trim() || "확인자"} (인)`, className: "footer-cell", colSpan: 6 },
-    { text: "", className: "blank-cell", colSpan: 4 },
-  ]);
+  createPreviewRow(
+    table,
+    previewFooterCells(
+      `확인자: ${checkerLibraryInput.value.trim() || "확인자 도서관"} 관장`,
+      `${checkerNameInput.value.trim() || "확인자"} (인)`
+    )
+  );
 
   documentPreview.replaceChildren(table);
 }
 
 function renderSummary() {
-  const workDays = selectedWorkDays().map((day) => DAY_NAMES[day]).join(", ") || "선택 필요";
-  const holidayText = state.holidays.length
-    ? state.holidays.map((holiday) => `${holiday.date} ${holiday.name}`).join(", ")
-    : "없음";
-  const monthText = workMonthInput.value || "선택 필요";
-  const workerText = workerNameInput.value.trim() || "입력 필요";
-  const libraryText = libraryNameInput.value.trim() || "입력 필요";
-  const checkerText = checkerNameInput.value.trim() || "입력 필요";
-  const timeText = `${startTimeInput.value || "--:--"} ~ ${endTimeInput.value || "--:--"}`;
-
-  const rows = [
-    ["근무년월", monthText],
-    ["작성도서관", libraryText],
-    ["근로자", workerText],
-    ["근무시간", timeText],
-    ["근무요일", workDays],
-    ["휴일", holidayText],
-    ["확인자", checkerText],
-  ];
-
-  summaryList.innerHTML = "";
-  for (const [label, value] of rows) {
-    const dt = document.createElement("dt");
-    const dd = document.createElement("dd");
-    dt.textContent = label;
-    dd.textContent = value;
-    summaryList.append(dt, dd);
-  }
-
   renderDocumentPreview();
 }
 
@@ -526,21 +508,6 @@ async function generateExcel() {
   setMessage(`${filename} 파일을 생성했습니다.`);
 }
 
-async function checkTemplate() {
-  if (window.TIMESHEET_TEMPLATE_BASE64) {
-    setStatus("템플릿 준비됨", "ready");
-    return;
-  }
-
-  try {
-    const response = await fetch(TEMPLATE_PATH, { method: "HEAD" });
-    if (!response.ok) throw new Error("missing");
-    setStatus("템플릿 준비됨", "ready");
-  } catch {
-    setStatus("템플릿 확인 필요", "error");
-  }
-}
-
 function resetForm() {
   form.reset();
   document.querySelector('input[name="weekday"][value="5"]').checked = true;
@@ -578,4 +545,3 @@ resetButton.addEventListener("click", resetForm);
 setDefaultDates();
 renderHolidays();
 renderSummary();
-checkTemplate();

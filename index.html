@@ -11,103 +11,110 @@
       <section class="workspace" aria-labelledby="app-title">
         <header class="page-header">
           <div>
-            <p class="eyebrow">Excel 생성 웹앱</p>
             <h1 id="app-title">기간제근로자 출근관리부</h1>
           </div>
-          <div class="status-pill" id="template-status">템플릿 확인 중</div>
         </header>
 
         <form id="timesheet-form" class="form-grid">
-          <section class="panel identity-panel" aria-labelledby="identity-title">
-            <div class="panel-header">
-              <h2 id="identity-title">기본 정보</h2>
-            </div>
-            <div class="fields two-col">
-              <label>
-                <span>근무년월</span>
-                <input id="work-month" type="month" required />
-              </label>
-              <label>
-                <span>작성도서관 이름</span>
-                <input id="library-name" type="text" placeholder="예: 중앙도서관" required />
-              </label>
-              <label>
-                <span>근로자 이름</span>
-                <input id="worker-name" type="text" placeholder="예: 홍길동" required />
-              </label>
-              <label>
-                <span>근무시간</span>
-                <div class="time-row">
-                  <input id="start-time" type="time" value="10:00" required />
-                  <span aria-hidden="true">~</span>
-                  <input id="end-time" type="time" value="18:00" required />
-                </div>
-              </label>
-              <label>
-                <span>작성자 이름</span>
-                <input id="writer-name" type="text" placeholder="예: 김담당" required />
-              </label>
-              <label>
-                <span>확인자 이름</span>
-                <input id="checker-name" type="text" placeholder="예: 이관장" required />
-              </label>
-              <label class="full-span">
-                <span>확인자 도서관</span>
-                <input id="checker-library" type="text" placeholder="예: 중앙도서관" required />
-              </label>
-            </div>
-          </section>
-
-          <section class="panel schedule-panel" aria-labelledby="schedule-title">
-            <div class="panel-header">
-              <h2 id="schedule-title">근무 설정</h2>
-            </div>
-            <fieldset class="weekday-fieldset">
-              <legend>근무요일</legend>
-              <div class="weekday-grid" id="weekday-grid">
-                <label><input type="checkbox" name="weekday" value="0" /> 월</label>
-                <label><input type="checkbox" name="weekday" value="1" /> 화</label>
-                <label><input type="checkbox" name="weekday" value="2" /> 수</label>
-                <label><input type="checkbox" name="weekday" value="3" /> 목</label>
-                <label><input type="checkbox" name="weekday" value="4" /> 금</label>
-                <label><input type="checkbox" name="weekday" value="5" checked /> 토</label>
-                <label><input type="checkbox" name="weekday" value="6" checked /> 일</label>
+          <div class="controls-column">
+            <section class="panel identity-panel" aria-labelledby="identity-title">
+              <div class="panel-header">
+                <h2 id="identity-title">기본 정보</h2>
               </div>
-            </fieldset>
+              <div class="fields two-col">
+                <label>
+                  <span>근무년월</span>
+                  <input id="work-month" type="month" required />
+                </label>
+                <label>
+                  <span>작성도서관 이름</span>
+                  <input id="library-name" type="text" placeholder="예: 중앙도서관" required />
+                </label>
+                <label>
+                  <span>근로자 이름</span>
+                  <input id="worker-name" type="text" placeholder="예: 홍길동" required />
+                </label>
+                <label>
+                  <span>작성자 이름</span>
+                  <input id="writer-name" type="text" placeholder="예: 김담당" required />
+                </label>
+                <label>
+                  <span>확인자 이름</span>
+                  <input id="checker-name" type="text" placeholder="예: 이관장" required />
+                </label>
+                <label>
+                  <span>확인자 도서관</span>
+                  <input id="checker-library" type="text" placeholder="예: 중앙도서관" required />
+                </label>
+              </div>
+            </section>
 
-            <div class="holiday-tools">
-              <label>
-                <span>휴일 날짜</span>
-                <input id="holiday-date" type="date" />
-              </label>
-              <label>
-                <span>휴일 이름</span>
-                <input id="holiday-name" type="text" placeholder="예: 광복절" />
-              </label>
-              <button class="secondary-btn" id="add-holiday" type="button">휴일 추가</button>
-            </div>
+            <section class="panel schedule-panel" aria-labelledby="schedule-title">
+              <div class="panel-header">
+                <h2 id="schedule-title">근무 설정</h2>
+              </div>
+              <div class="schedule-layout">
+                <div class="workday-block">
+                  <fieldset class="weekday-fieldset">
+                    <legend>근무요일</legend>
+                    <div class="weekday-grid" id="weekday-grid">
+                      <label><input type="checkbox" name="weekday" value="0" /> 월</label>
+                      <label><input type="checkbox" name="weekday" value="1" /> 화</label>
+                      <label><input type="checkbox" name="weekday" value="2" /> 수</label>
+                      <label><input type="checkbox" name="weekday" value="3" /> 목</label>
+                      <label><input type="checkbox" name="weekday" value="4" /> 금</label>
+                      <label><input type="checkbox" name="weekday" value="5" checked /> 토</label>
+                      <label><input type="checkbox" name="weekday" value="6" checked /> 일</label>
+                    </div>
+                  </fieldset>
 
-            <div class="holiday-list-wrap">
-              <div class="list-title">휴일 목록</div>
-              <ul id="holiday-list" class="holiday-list"></ul>
-            </div>
-          </section>
+                  <label class="worktime-field">
+                    <span>근무시간</span>
+                    <div class="time-row compact-time-row">
+                      <input id="start-time" type="time" value="10:00" required />
+                      <span aria-hidden="true">~</span>
+                      <input id="end-time" type="time" value="18:00" required />
+                    </div>
+                  </label>
+                </div>
 
-          <section class="panel preview-panel" aria-labelledby="preview-title">
-            <div class="panel-header">
-              <h2 id="preview-title">요약 및 생성</h2>
-            </div>
-            <dl class="summary-list" id="summary-list"></dl>
-            <div class="actions">
-              <button id="generate-button" class="primary-btn" type="submit">엑셀 파일 생성</button>
-              <button id="reset-button" class="secondary-btn" type="button">입력 초기화</button>
-            </div>
-            <p class="message" id="message" role="status" aria-live="polite"></p>
-          </section>
+                <section class="holiday-block" aria-labelledby="holiday-title">
+                  <div class="subsection-header">
+                    <h3 id="holiday-title">휴일 관리</h3>
+                  </div>
+                  <div class="holiday-tools">
+                    <label>
+                      <span>휴일 날짜</span>
+                      <input id="holiday-date" type="date" />
+                    </label>
+                    <label>
+                      <span>휴일 이름</span>
+                      <input id="holiday-name" type="text" placeholder="예: 광복절" />
+                    </label>
+                    <button class="secondary-btn full-span" id="add-holiday" type="button">휴일 추가</button>
+                  </div>
+
+                  <div class="holiday-list-wrap">
+                    <div class="list-title">휴일 목록</div>
+                    <ul id="holiday-list" class="holiday-list"></ul>
+                  </div>
+                </section>
+              </div>
+            </section>
+
+            <section class="panel action-panel" aria-label="엑셀 작업">
+              <div class="actions">
+                <button id="generate-button" class="primary-btn" type="submit">엑셀 파일 생성</button>
+                <button id="reset-button" class="secondary-btn" type="button">입력 초기화</button>
+              </div>
+              <p class="message" id="message" role="status" aria-live="polite"></p>
+            </section>
+          </div>
 
           <section class="panel document-panel" aria-labelledby="document-preview-title">
-            <div class="panel-header">
+            <div class="panel-header panel-header-stack">
               <h2 id="document-preview-title">문서 미리보기</h2>
+              <p class="panel-note">실제 엑셀 파일과 모양이 조금 다를 수 있습니다.</p>
             </div>
             <div class="document-preview-scroll" aria-live="polite">
               <div id="document-preview" class="document-preview"></div>
