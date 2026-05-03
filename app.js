@@ -4,8 +4,46 @@ const WEEKDAY_DAYS = new Set([0, 1, 2, 3, 4]);
 const WEEKEND_DAYS = new Set([5, 6]);
 const DAY_COLUMNS = [3, 4, 5, 6, 8, 10, 11, 12, 14, 16];
 const COL_NAMES = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q"];
+const PREVIEW_DAY_SLOT_WIDTH = 43.17 * 0.8;
+const PREVIEW_HALF_DAY_SLOT_WIDTH = PREVIEW_DAY_SLOT_WIDTH / 2;
+const PREVIEW_COLUMN_WIDTHS = [
+  19,
+  19,
+  PREVIEW_DAY_SLOT_WIDTH,
+  PREVIEW_DAY_SLOT_WIDTH,
+  PREVIEW_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_DAY_SLOT_WIDTH,
+  PREVIEW_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_HALF_DAY_SLOT_WIDTH,
+  PREVIEW_DAY_SLOT_WIDTH,
+  PREVIEW_DAY_SLOT_WIDTH,
+];
+const STORAGE_KEY = "timesheet-form-defaults";
+const HOLIDAY_STORAGE_KEY = "timesheet-holiday-settings";
+const DEFAULT_WORK_DAYS = [5, 6];
+const DEFAULT_START_TIME = "10:00";
+const DEFAULT_END_TIME = "18:00";
+const WEEKDAY_PRESET = {
+  days: [1, 2, 3, 4],
+  startTime: "10:00",
+  endTime: "13:00",
+};
+const WEEKEND_PRESET = {
+  days: [5, 6],
+  startTime: "10:00",
+  endTime: "18:00",
+};
 
 const state = {
+  customHolidays: [],
+  deletedDefaultHolidays: [],
   holidays: [],
 };
 
@@ -18,10 +56,14 @@ const endTimeInput = document.querySelector("#end-time");
 const writerNameInput = document.querySelector("#writer-name");
 const checkerNameInput = document.querySelector("#checker-name");
 const checkerLibraryInput = document.querySelector("#checker-library");
+const holidayModal = document.querySelector("#holiday-modal");
+const openHolidayModalButton = document.querySelector("#open-holiday-modal-btn");
+const closeHolidayModalButton = document.querySelector("#close-holiday-modal-btn");
+const weekdayPresetButton = document.querySelector("#weekday-preset-button");
+const weekendPresetButton = document.querySelector("#weekend-preset-button");
 const holidayDateInput = document.querySelector("#holiday-date");
 const holidayNameInput = document.querySelector("#holiday-name");
 const addHolidayButton = document.querySelector("#add-holiday");
-const resetButton = document.querySelector("#reset-button");
 const holidayList = document.querySelector("#holiday-list");
 const documentPreview = document.querySelector("#document-preview");
 const message = document.querySelector("#message");
@@ -31,8 +73,8 @@ function pad2(value) {
 }
 
 function todayMonthValue() {
-  const now = new Date();
-  return `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`;
+  const nextMonth = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1);
+  return `${nextMonth.getFullYear()}-${pad2(nextMonth.getMonth() + 1)}`;
 }
 
 function parseMonth(value) {
@@ -73,10 +115,124 @@ function formatNameForExcel(name) {
   return name.trim();
 }
 
+function formatShortNameForExcel(name) {
+  const compact = normalizeNameForFile(name);
+  if (compact.length >= 1 && compact.length <= 3) {
+    return compact.split("").join(" ");
+  }
+  return name.trim();
+}
+
 function selectedWorkDays() {
   return [...document.querySelectorAll('input[name="weekday"]:checked')]
     .map((input) => Number(input.value))
     .sort((a, b) => a - b);
+}
+
+function setSelectedWorkDays(days) {
+  const selected = new Set((Array.isArray(days) && days.length ? days : DEFAULT_WORK_DAYS).map(Number));
+
+  for (const input of document.querySelectorAll('input[name="weekday"]')) {
+    input.checked = selected.has(Number(input.value));
+  }
+}
+
+function applyWorkPreset(preset) {
+  setSelectedWorkDays(preset.days);
+  startTimeInput.value = preset.startTime;
+  endTimeInput.value = preset.endTime;
+  writeStoredFormDefaults();
+  renderSummary();
+}
+
+function readStoredFormDefaults() {
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeStoredFormDefaults() {
+  try {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        libraryName: libraryNameInput.value.trim(),
+        startTime: startTimeInput.value || DEFAULT_START_TIME,
+        endTime: endTimeInput.value || DEFAULT_END_TIME,
+        writerName: writerNameInput.value.trim(),
+        checkerName: checkerNameInput.value.trim(),
+        checkerLibrary: checkerLibraryInput.value.trim(),
+        workDays: selectedWorkDays(),
+      })
+    );
+  } catch {
+    // Ignore storage failures in restricted environments.
+  }
+}
+
+function applyStoredFormDefaults() {
+  const stored = readStoredFormDefaults();
+  libraryNameInput.value = stored.libraryName ?? "";
+  startTimeInput.value = stored.startTime || DEFAULT_START_TIME;
+  endTimeInput.value = stored.endTime || DEFAULT_END_TIME;
+  writerNameInput.value = stored.writerName ?? "";
+  checkerNameInput.value = stored.checkerName ?? "";
+  checkerLibraryInput.value = stored.checkerLibrary ?? "";
+  setSelectedWorkDays(stored.workDays);
+}
+
+function readStoredHolidaySettings() {
+  try {
+    const raw = window.localStorage.getItem(HOLIDAY_STORAGE_KEY);
+    if (!raw) return {};
+
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeStoredHolidaySettings() {
+  try {
+    window.localStorage.setItem(
+      HOLIDAY_STORAGE_KEY,
+      JSON.stringify({
+        customHolidays: state.customHolidays,
+        deletedDefaultHolidays: state.deletedDefaultHolidays,
+      })
+    );
+  } catch {
+    // Ignore storage failures in restricted environments.
+  }
+}
+
+function applyStoredHolidaySettings() {
+  const stored = readStoredHolidaySettings();
+  const customByDate = new Map();
+
+  for (const holiday of Array.isArray(stored.customHolidays) ? stored.customHolidays : []) {
+    if (!holiday || typeof holiday.date !== "string") continue;
+    customByDate.set(holiday.date, {
+      date: holiday.date,
+      name: typeof holiday.name === "string" && holiday.name.trim() ? holiday.name.trim() : "휴일",
+    });
+  }
+
+  state.customHolidays = [...customByDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+  state.deletedDefaultHolidays = [
+    ...new Set(
+      (Array.isArray(stored.deletedDefaultHolidays) ? stored.deletedDefaultHolidays : []).filter(
+        (date) => typeof date === "string"
+      )
+    ),
+  ];
 }
 
 function setMessage(text, isError = false) {
@@ -84,17 +240,74 @@ function setMessage(text, isError = false) {
   message.classList.toggle("error", isError);
 }
 
+function openHolidayModal() {
+  syncHolidaysForMonth();
+  renderHolidays();
+  holidayModal.hidden = false;
+  requestAnimationFrame(() => {
+    holidayDateInput.focus();
+  });
+}
+
+function closeHolidayModal() {
+  holidayModal.hidden = true;
+}
+
 function setDefaultDates() {
   const monthValue = todayMonthValue();
   workMonthInput.value = monthValue;
-  const { year, month } = parseMonth(monthValue);
-  holidayDateInput.value = `${year}-${pad2(month)}-01`;
 }
 
-function pruneHolidaysForMonth() {
-  const { year, month } = parseMonth(workMonthInput.value);
+function defaultHolidaysForMonth(year, month) {
   const prefix = `${year}-${pad2(month)}-`;
-  state.holidays = state.holidays.filter((holiday) => holiday.date.startsWith(prefix));
+  const deletedDefaults = new Set(state.deletedDefaultHolidays);
+
+  return (Array.isArray(window.DEFAULT_HOLIDAYS) ? window.DEFAULT_HOLIDAYS : [])
+    .filter((holiday) => holiday.date.startsWith(prefix) && !deletedDefaults.has(holiday.date))
+    .map((holiday) => ({
+      date: holiday.date,
+      name: holiday.name || "휴일",
+      source: "default",
+    }));
+}
+
+function combinedHolidaysForMonth(year, month) {
+  const prefix = `${year}-${pad2(month)}-`;
+  const holidaysByDate = new Map(defaultHolidaysForMonth(year, month).map((holiday) => [holiday.date, holiday]));
+
+  for (const holiday of state.customHolidays) {
+    if (holiday.date.startsWith(prefix)) {
+      holidaysByDate.set(holiday.date, {
+        ...holiday,
+        source: "custom",
+      });
+    }
+  }
+
+  return [...holidaysByDate.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+function syncHolidaysForMonth() {
+  if (!workMonthInput.value) return;
+
+  const { year, month } = parseMonth(workMonthInput.value);
+  holidayDateInput.value = `${year}-${pad2(month)}-01`;
+  state.holidays = combinedHolidaysForMonth(year, month);
+}
+
+function removeHoliday(holiday) {
+  if (holiday.source === "default") {
+    if (!state.deletedDefaultHolidays.includes(holiday.date)) {
+      state.deletedDefaultHolidays.push(holiday.date);
+    }
+  } else {
+    state.customHolidays = state.customHolidays.filter((item) => item.date !== holiday.date);
+  }
+
+  writeStoredHolidaySettings();
+  syncHolidaysForMonth();
+  renderHolidays();
+  renderSummary();
 }
 
 function renderHolidays() {
@@ -112,20 +325,41 @@ function renderHolidays() {
     const item = document.createElement("li");
     item.className = "holiday-item";
 
-    const text = document.createElement("span");
-    text.textContent = `${holiday.date} - ${holiday.name}`;
+    const meta = document.createElement("div");
+    meta.className = "holiday-item-meta";
+
+    const date = document.createElement("span");
+    date.className = "holiday-date-label";
+    date.textContent = holiday.date;
+
+    const nameRow = document.createElement("div");
+    nameRow.className = "holiday-name-row";
+
+    const name = document.createElement("span");
+    name.className = "holiday-name-label";
+    name.textContent = holiday.name;
+
+    const sourceTag = document.createElement("span");
+    sourceTag.className = `holiday-source-tag ${holiday.source === "default" ? "is-default" : "is-custom"}`;
+    sourceTag.textContent = holiday.source === "default" ? "기본" : "추가됨";
+
+    nameRow.append(name, sourceTag);
+    meta.append(date, nameRow);
+
+    item.append(meta);
 
     const remove = document.createElement("button");
     remove.type = "button";
     remove.className = "remove-holiday";
-    remove.textContent = "삭제";
+    remove.innerHTML = "&times;";
+    remove.title = `${holiday.name} 삭제`;
+    remove.setAttribute("aria-label", `${holiday.name} 삭제`);
     remove.addEventListener("click", () => {
-      state.holidays = state.holidays.filter((item) => item.date !== holiday.date);
-      renderHolidays();
-      renderSummary();
+      removeHoliday(holiday);
     });
 
-    item.append(text, remove);
+    item.append(remove);
+
     holidayList.append(item);
   }
 }
@@ -149,6 +383,22 @@ function createPreviewRow(table, cells) {
   return row;
 }
 
+function appendPreviewColumnGroup(table) {
+  const colGroup = document.createElement("colgroup");
+  let totalWidth = 0;
+
+  for (const width of PREVIEW_COLUMN_WIDTHS) {
+    const col = document.createElement("col");
+    col.style.width = `${width}px`;
+    totalWidth += width;
+    colGroup.append(col);
+  }
+
+  table.append(colGroup);
+  table.style.width = `${totalWidth}px`;
+  table.style.margin = "0 auto";
+}
+
 function appendMergedSpacerRow(table) {
   const row = document.createElement("tr");
   row.className = "merged-spacer-row";
@@ -158,10 +408,9 @@ function appendMergedSpacerRow(table) {
 
 function previewFooterCells(labelText, signatureText) {
   return [
-    { text: "", className: "blank-cell", colSpan: 4 },
-    { text: labelText, className: "footer-cell", colSpan: 5 },
+    { text: "", className: "blank-cell", colSpan: 7 },
+    { text: labelText, className: "footer-cell", colSpan: 6 },
     { text: signatureText, className: "footer-cell signature-cell", colSpan: 4 },
-    { text: "", className: "blank-cell", colSpan: 4 },
   ];
 }
 
@@ -195,52 +444,83 @@ function previewDayCell(day, data, kind) {
   return { text: "", className: "time-cell" };
 }
 
+function previewBandSlots(startDay) {
+  const dayCount = startDay === 21 ? 11 : 10;
+  const dayNumbers = Array.from({ length: dayCount }, (_, index) => startDay + index);
+  const columnPositions = startDay === 21 ? [...DAY_COLUMNS, 17] : DAY_COLUMNS;
+  const bandEndColumn = startDay === 21 ? 18 : 17;
+  const slots = dayNumbers.map((day, index) => ({
+    day,
+    colSpan: (columnPositions[index + 1] ?? bandEndColumn) - columnPositions[index],
+  }));
+
+  if (startDay !== 21) {
+    slots.push({ day: null, colSpan: 1, className: "tail-fill-cell" });
+  }
+
+  return slots;
+}
+
 function appendDayBand(table, startDay, data) {
-  const dayNumbers = Array.from({ length: startDay === 21 ? 11 : 10 }, (_, index) => startDay + index);
+  const daySlots = previewBandSlots(startDay);
   const rowStart = table.rows.length;
   const leftLabelSpan = startDay === 21 ? 2 : 2;
-  const tailBlankCount = startDay === 21 ? 0 : 1;
 
   const dateCells = [{ text: "일 자", className: "label-cell", colSpan: 2 }];
-  for (const day of dayNumbers) {
-    dateCells.push(previewDayCell(day, data, "date"));
+  for (const slot of daySlots) {
+    dateCells.push(
+      slot.day === null
+        ? { text: "", className: slot.className, colSpan: slot.colSpan }
+        : { ...previewDayCell(slot.day, data, "date"), colSpan: slot.colSpan }
+    );
   }
-  if (tailBlankCount) dateCells.push({ text: "", className: "blank-cell" });
   createPreviewRow(table, dateCells);
 
   const dowCells = [{ text: "", className: "label-cell", colSpan: 2 }];
-  for (const day of dayNumbers) {
-    dowCells.push(previewDayCell(day, data, "dow"));
+  for (const slot of daySlots) {
+    dowCells.push(
+      slot.day === null
+        ? { text: "", className: slot.className, colSpan: slot.colSpan }
+        : { ...previewDayCell(slot.day, data, "dow"), colSpan: slot.colSpan }
+    );
   }
-  if (tailBlankCount) dowCells.push({ text: "", className: "blank-cell" });
   createPreviewRow(table, dowCells);
 
   const startCells = [{ text: "근 로\n시 간", className: "side-label", rowSpan: 3, colSpan: leftLabelSpan }];
-  for (const day of dayNumbers) {
-    startCells.push(previewDayCell(day, data, "start"));
+  for (const slot of daySlots) {
+    startCells.push(
+      slot.day === null
+        ? { text: "", className: slot.className, colSpan: slot.colSpan, rowSpan: 3 }
+        : { ...previewDayCell(slot.day, data, "start"), colSpan: slot.colSpan }
+    );
   }
-  if (tailBlankCount) startCells.push({ text: "", className: "blank-cell" });
-  createPreviewRow(table, startCells);
+  const startRow = createPreviewRow(table, startCells);
+  startRow.classList.add("time-start-row");
 
   const tildeCells = [];
-  for (const day of dayNumbers) {
-    tildeCells.push(previewDayCell(day, data, "tilde"));
+  for (const slot of daySlots) {
+    if (slot.day === null) continue;
+    tildeCells.push({ ...previewDayCell(slot.day, data, "tilde"), colSpan: slot.colSpan });
   }
-  if (tailBlankCount) tildeCells.push({ text: "", className: "blank-cell" });
-  createPreviewRow(table, tildeCells);
+  const middleRow = createPreviewRow(table, tildeCells);
+  middleRow.classList.add("time-middle-row");
 
   const endCells = [];
-  for (const day of dayNumbers) {
-    endCells.push(previewDayCell(day, data, "end"));
+  for (const slot of daySlots) {
+    if (slot.day === null) continue;
+    endCells.push({ ...previewDayCell(slot.day, data, "end"), colSpan: slot.colSpan });
   }
-  if (tailBlankCount) endCells.push({ text: "", className: "blank-cell" });
-  createPreviewRow(table, endCells);
+  const endRow = createPreviewRow(table, endCells);
+  endRow.classList.add("time-end-row");
 
   const signCells = [{ text: "서\n\n명", className: "side-label", rowSpan: 5 }, { text: "근", className: "side-label worker-char-cell worker-char-top" }];
-  for (const day of dayNumbers) {
-    signCells.push({ ...previewDayCell(day, data, "sign"), rowSpan: 3 });
+  for (const slot of daySlots) {
+    signCells.push(
+      slot.day === null
+        ? { text: "", className: slot.className, colSpan: slot.colSpan, rowSpan: 3 }
+        : { ...previewDayCell(slot.day, data, "sign"), colSpan: slot.colSpan, rowSpan: 3 }
+    );
   }
-  if (tailBlankCount) signCells.push({ text: "", className: "blank-cell", rowSpan: 3 });
   const signRow = createPreviewRow(table, signCells);
   signRow.classList.add("worker-char-row");
 
@@ -250,11 +530,15 @@ function appendDayBand(table, startDay, data) {
   workerBottomRow.classList.add("worker-char-row");
 
   const confirmCells = [{ text: "확\n인", className: "side-label", rowSpan: 2 }];
-  for (const day of dayNumbers) {
-    confirmCells.push({ text: day <= data.lastDay ? "" : "", className: "time-cell", rowSpan: 2 });
+  for (const slot of daySlots) {
+    confirmCells.push(
+      slot.day === null
+        ? { text: "", className: slot.className, colSpan: slot.colSpan, rowSpan: 2 }
+        : { text: "", className: "time-cell", colSpan: slot.colSpan, rowSpan: 2 }
+    );
   }
-  if (tailBlankCount) confirmCells.push({ text: "", className: "blank-cell", rowSpan: 2 });
-  createPreviewRow(table, confirmCells);
+  const confirmRow = createPreviewRow(table, confirmCells);
+  confirmRow.classList.add("confirm-row");
   appendMergedSpacerRow(table);
 
   table.rows[rowStart].dataset.band = String(startDay);
@@ -266,6 +550,7 @@ function renderDocumentPreview() {
   const data = previewMonthData();
   const table = document.createElement("table");
   table.className = "excel-preview-table";
+  appendPreviewColumnGroup(table);
 
   createPreviewRow(table, [
     { text: "", className: "blank-cell", colSpan: 3 },
@@ -279,12 +564,11 @@ function renderDocumentPreview() {
   ]);
   createPreviewRow(table, [
     { text: "근무지", className: "label-cell", colSpan: 2 },
-    { text: libraryNameInput.value.trim() || "작성도서관", className: "work-cell", colSpan: 2 },
+    { text: libraryNameInput.value.trim() || "작성도서관", className: "work-cell", colSpan: 3 },
     { text: "업 무", className: "label-cell", colSpan: 2 },
-    { text: `자료실 업무보조 ${getModeLabel(data.workDays)}`, className: "work-cell", colSpan: 3 },
+    { text: `자료실 업무보조 ${getModeLabel(data.workDays)}`, className: "work-cell", colSpan: 4 },
     { text: "성 명", className: "label-cell", colSpan: 2 },
-    { text: formatNameForExcel(workerNameInput.value) || "근로자", className: "name-cell", colSpan: 2 },
-    { text: "", className: "blank-cell", colSpan: 4 },
+    { text: formatNameForExcel(workerNameInput.value) || "근로자", className: "name-cell", colSpan: 4 },
   ]);
   createPreviewRow(table, [{ text: "", className: "blank-cell", colSpan: 17 }]);
 
@@ -297,15 +581,15 @@ function renderDocumentPreview() {
     table,
     previewFooterCells(
       `작성자: ${libraryNameInput.value.trim() || "작성도서관"}`,
-      `${writerNameInput.value.trim() || "작성자"} (인)`
+      `${formatShortNameForExcel(writerNameInput.value) || "작성자"} (인)`
     )
   );
-  createPreviewRow(table, [{ text: "", className: "blank-cell", colSpan: 17 }]);
+  createPreviewRow(table, [{ text: "", className: "footer-gap-cell", colSpan: 17 }]);
   createPreviewRow(
     table,
     previewFooterCells(
       `확인자: ${checkerLibraryInput.value.trim() || "확인자 도서관"} 관장`,
-      `${checkerNameInput.value.trim() || "확인자"} (인)`
+      `${formatShortNameForExcel(checkerNameInput.value) || "확인자"} (인)`
     )
   );
 
@@ -331,11 +615,14 @@ function addHoliday() {
     return;
   }
 
-  state.holidays = state.holidays.filter((holiday) => holiday.date !== date);
-  state.holidays.push({ date, name });
-  state.holidays.sort((a, b) => a.date.localeCompare(b.date));
+  state.deletedDefaultHolidays = state.deletedDefaultHolidays.filter((item) => item !== date);
+  state.customHolidays = state.customHolidays.filter((holiday) => holiday.date !== date);
+  state.customHolidays.push({ date, name });
+  state.customHolidays.sort((a, b) => a.date.localeCompare(b.date));
+  writeStoredHolidaySettings();
   holidayNameInput.value = "";
   setMessage("");
+  syncHolidaysForMonth();
   renderHolidays();
   renderSummary();
 }
@@ -360,14 +647,29 @@ function setCellValue(sheet, ref, value) {
   sheet.getCell(ref).value = value;
 }
 
+function cloneStyleValue(value) {
+  if (!value || typeof value !== "object") return value;
+  if (Array.isArray(value)) return value.map(cloneStyleValue);
+
+  return Object.fromEntries(
+    Object.entries(value).map(([key, entry]) => [key, cloneStyleValue(entry)])
+  );
+}
+
+function detachCellStyle(cell) {
+  cell.style = cloneStyleValue(cell.style || {});
+}
+
 function setTimeCell(sheet, ref, value) {
   const cell = sheet.getCell(ref);
+  detachCellStyle(cell);
   cell.value = value;
   cell.numFmt = "@";
 }
 
 function setSignCell(sheet, ref, value, holiday = false) {
   const cell = sheet.getCell(ref);
+  detachCellStyle(cell);
   cell.value = value;
   cell.font = {
     ...(cell.font || {}),
@@ -388,11 +690,8 @@ function clearDayBlock(sheet, row, col) {
 
 function holidayMapForMonth(year, month) {
   const byDay = new Map();
-  const prefix = `${year}-${pad2(month)}-`;
-  for (const holiday of state.holidays) {
-    if (holiday.date.startsWith(prefix)) {
-      byDay.set(Number(holiday.date.slice(-2)), holiday.name || "휴일");
-    }
+  for (const holiday of combinedHolidaysForMonth(year, month)) {
+    byDay.set(Number(holiday.date.slice(-2)), holiday.name || "휴일");
   }
   return byDay;
 }
@@ -413,9 +712,9 @@ function fillWorkbook(workbook) {
   setCellValue(sheet, "O4", formatNameForExcel(workerNameInput.value));
   setCellValue(sheet, "I5", getModeLabel(workDays));
   setCellValue(sheet, "H39", `작성자: ${libraryName}`);
-  setCellValue(sheet, "N39", `${writerNameInput.value.trim()} (인)`);
+  setCellValue(sheet, "N39", `${formatShortNameForExcel(writerNameInput.value) || "작성자"} (인)`);
   setCellValue(sheet, "H41", `확인자: ${checkerLibrary} 관장`);
-  setCellValue(sheet, "N41", `${checkerNameInput.value.trim()} (인)`);
+  setCellValue(sheet, "N41", `${formatShortNameForExcel(checkerNameInput.value) || "확인자"} (인)`);
 
   for (let day = 1; day <= 31; day += 1) {
     const { row, col } = dayToPosition(day);
@@ -508,19 +807,14 @@ async function generateExcel() {
   setMessage(`${filename} 파일을 생성했습니다.`);
 }
 
-function resetForm() {
-  form.reset();
-  document.querySelector('input[name="weekday"][value="5"]').checked = true;
-  document.querySelector('input[name="weekday"][value="6"]').checked = true;
-  state.holidays = [];
-  setDefaultDates();
-  setMessage("");
-  renderHolidays();
+form.addEventListener("input", () => {
+  writeStoredFormDefaults();
   renderSummary();
-}
-
-form.addEventListener("input", renderSummary);
-form.addEventListener("change", renderSummary);
+});
+form.addEventListener("change", () => {
+  writeStoredFormDefaults();
+  renderSummary();
+});
 form.addEventListener("submit", async (event) => {
   event.preventDefault();
   try {
@@ -532,16 +826,38 @@ form.addEventListener("submit", async (event) => {
 });
 
 workMonthInput.addEventListener("change", () => {
-  const { year, month } = parseMonth(workMonthInput.value);
-  holidayDateInput.value = `${year}-${pad2(month)}-01`;
-  pruneHolidaysForMonth();
+  syncHolidaysForMonth();
   renderHolidays();
   renderSummary();
 });
 
+openHolidayModalButton.addEventListener("click", openHolidayModal);
+closeHolidayModalButton.addEventListener("click", closeHolidayModal);
+holidayModal.addEventListener("click", (event) => {
+  if (event.target === holidayModal) {
+    closeHolidayModal();
+  }
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !holidayModal.hidden) {
+    closeHolidayModal();
+  }
+});
+
+weekdayPresetButton.addEventListener("click", () => {
+  applyWorkPreset(WEEKDAY_PRESET);
+});
+
+weekendPresetButton.addEventListener("click", () => {
+  applyWorkPreset(WEEKEND_PRESET);
+});
+
 addHolidayButton.addEventListener("click", addHoliday);
-resetButton.addEventListener("click", resetForm);
 
 setDefaultDates();
+applyStoredFormDefaults();
+applyStoredHolidaySettings();
+workerNameInput.value = "";
+syncHolidaysForMonth();
 renderHolidays();
 renderSummary();
