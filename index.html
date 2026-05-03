@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>기간제근로자 출근관리부 생성기</title>
-    <link rel="stylesheet" href="./style.css?v=20260503-24" />
+    <link rel="stylesheet" href="./style.css?v=20260503-26" />
   </head>
   <body>
     <main class="app-shell">
@@ -42,7 +42,10 @@
                       <input id="work-month" type="month" required />
                     </label>
                     <label>
-                      <span>작성도서관 이름</span>
+                      <div class="field-label-row">
+                        <span>작성도서관 이름</span>
+                        <span class="stored-badge">브라우저 저장</span>
+                      </div>
                       <input id="library-name" type="text" placeholder="예: 중앙도서관" required />
                     </label>
                     <label>
@@ -50,15 +53,24 @@
                       <input id="worker-name" type="text" placeholder="예: 홍길동" required />
                     </label>
                     <label>
-                      <span>작성자 이름</span>
+                      <div class="field-label-row">
+                        <span>작성자 이름</span>
+                        <span class="stored-badge">브라우저 저장</span>
+                      </div>
                       <input id="writer-name" type="text" placeholder="예: 김담당" required />
                     </label>
                     <label>
-                      <span>확인자 이름</span>
+                      <div class="field-label-row">
+                        <span>확인자 이름</span>
+                        <span class="stored-badge">브라우저 저장</span>
+                      </div>
                       <input id="checker-name" type="text" placeholder="예: 이관장" required />
                     </label>
                     <label>
-                      <span>확인자 도서관</span>
+                      <div class="field-label-row">
+                        <span>확인자 도서관</span>
+                        <span class="stored-badge">브라우저 저장</span>
+                      </div>
                       <input id="checker-library" type="text" placeholder="예: 중앙도서관" required />
                     </label>
                   </div>
@@ -68,7 +80,7 @@
                   <div class="subsection-header surface-header schedule-header">
                     <h3 id="schedule-title">근무 설정</h3>
                     <div class="schedule-preset-actions" aria-label="근무 설정 프리셋">
-                      <button id="weekday-preset-button" class="schedule-preset-btn" type="button">주간</button>
+                      <button id="weekday-preset-button" class="schedule-preset-btn" type="button">평일</button>
                       <button id="weekend-preset-button" class="schedule-preset-btn" type="button">주말</button>
                     </div>
                   </div>
@@ -112,7 +124,7 @@
           <section class="panel document-panel" aria-labelledby="document-preview-title">
             <div class="panel-header panel-header-stack preview-header">
               <span class="panel-kicker panel-kicker-preview">미리보기</span>
-              <h2 id="document-preview-title">문서 미리보기</h2>
+              <h2 id="document-preview-title">문서 미리보기 <span class="preview-title-note">(엑셀과 약간 다를 수 있음)</span></h2>
             </div>
             <div class="document-preview-scroll" aria-live="polite">
               <div id="document-preview" class="document-preview"></div>
@@ -158,8 +170,8 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
-    <script src="./template-data.js?v=20260503-24"></script>
-    <script src="./holidays.js?v=20260503-24"></script>
-    <script src="./app.js?v=20260503-24"></script>
+    <script src="./template-data.js?v=20260503-26"></script>
+    <script src="./holidays.js?v=20260503-26"></script>
+    <script src="./app.js?v=20260503-26"></script>
   </body>
 </html>
