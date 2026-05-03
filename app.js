@@ -67,6 +67,13 @@ const addHolidayButton = document.querySelector("#add-holiday");
 const holidayList = document.querySelector("#holiday-list");
 const documentPreview = document.querySelector("#document-preview");
 const message = document.querySelector("#message");
+const storedBadgeByInputId = new Map(
+  ["library-name", "writer-name", "checker-name", "checker-library"].map((inputId) => [
+    inputId,
+    document.querySelector(`[data-saved-badge-for="${inputId}"]`),
+  ])
+);
+const storedBadgeTimeouts = new Map();
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -143,6 +150,25 @@ function applyWorkPreset(preset) {
   endTimeInput.value = preset.endTime;
   writeStoredFormDefaults();
   renderSummary();
+}
+
+function flashStoredBadge(input) {
+  const badge = storedBadgeByInputId.get(input.id);
+  if (!badge) return;
+
+  badge.classList.add("is-visible");
+
+  const existingTimeout = storedBadgeTimeouts.get(badge);
+  if (existingTimeout) {
+    clearTimeout(existingTimeout);
+  }
+
+  const timeoutId = setTimeout(() => {
+    badge.classList.remove("is-visible");
+    storedBadgeTimeouts.delete(badge);
+  }, 1400);
+
+  storedBadgeTimeouts.set(badge, timeoutId);
 }
 
 function readStoredFormDefaults() {
@@ -851,6 +877,16 @@ weekdayPresetButton.addEventListener("click", () => {
 weekendPresetButton.addEventListener("click", () => {
   applyWorkPreset(WEEKEND_PRESET);
 });
+
+for (const input of [libraryNameInput, writerNameInput, checkerNameInput, checkerLibraryInput]) {
+  input.addEventListener("input", () => {
+    flashStoredBadge(input);
+  });
+
+  input.addEventListener("change", () => {
+    flashStoredBadge(input);
+  });
+}
 
 addHolidayButton.addEventListener("click", addHoliday);
 

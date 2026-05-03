@@ -134,15 +134,7 @@ h2 {
   inset: 0 0 auto;
   height: 5px;
   background: linear-gradient(90deg, var(--accent) 0%, var(--warm) 100%);
-  opacity: 0.9;
-}
-
-.panel::after {
-  content: "";
-  position: absolute;
-  top: -72px;
-  right: -72px;
-  width: 180px;
+    border-radius: 999px;
   height: 180px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 72%);
@@ -151,17 +143,9 @@ h2 {
 
 .settings-panel {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 100%;
-  flex: 1 1 auto;
-  background: linear-gradient(180deg, #f7f1e8 0%, #f3ede3 100%);
 }
 
 .document-panel {
-  position: static;
-  display: flex;
-  flex-direction: column;
   justify-self: start;
   width: fit-content;
   max-width: 100%;
@@ -287,18 +271,27 @@ h2 {
 }
 
 .field-label-row {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  min-height: 21px;
   margin-bottom: 6px;
 }
 
-.field-label-row > span:first-child {
+.field-label-row.has-stored-badge {
+  padding-right: 78px;
+}
+
+.field-label-row .field-label-text {
   margin-bottom: 0;
 }
 
 .stored-badge {
+  position: absolute;
+  top: 50%;
+  right: 0;
   display: inline-flex;
   align-items: center;
   min-height: 21px;
@@ -310,6 +303,17 @@ h2 {
   font-size: 10px;
   font-weight: 800;
   white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(calc(-50% - 2px));
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
+}
+
+.stored-badge.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%);
 }
 
 h3 {
@@ -359,7 +363,8 @@ fieldset {
   min-width: 0;
 }
 
-label span,
+label > span,
+.field-label-text,
 legend,
 .list-title {
   display: block;
