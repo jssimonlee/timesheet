@@ -270,52 +270,6 @@ h2 {
   font-weight: 700;
 }
 
-.field-label-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  min-height: 21px;
-  margin-bottom: 6px;
-}
-
-.field-label-row.has-stored-badge {
-  padding-right: 78px;
-}
-
-.field-label-row .field-label-text {
-  margin-bottom: 0;
-}
-
-.stored-badge {
-  position: absolute;
-  top: 50%;
-  right: 0;
-  display: inline-flex;
-  align-items: center;
-  min-height: 21px;
-  padding: 0 8px;
-  border: 1px solid rgba(20, 110, 99, 0.16);
-  border-radius: 999px;
-  background: rgba(20, 110, 99, 0.08);
-  color: var(--accent-strong);
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: translateY(calc(-50% - 2px));
-  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
-}
-
-.stored-badge.is-visible {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(-50%);
-}
-
 h3 {
   margin: 0;
   font-size: 13px;
@@ -364,7 +318,6 @@ fieldset {
 }
 
 label > span,
-.field-label-text,
 legend,
 .list-title {
   display: block;
