@@ -134,7 +134,15 @@ h2 {
   inset: 0 0 auto;
   height: 5px;
   background: linear-gradient(90deg, var(--accent) 0%, var(--warm) 100%);
-    border-radius: 999px;
+  opacity: 0.9;
+}
+
+.panel::after {
+  content: "";
+  position: absolute;
+  top: -72px;
+  right: -72px;
+  width: 180px;
   height: 180px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0) 72%);
@@ -143,9 +151,17 @@ h2 {
 
 .settings-panel {
   display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 100%;
+  flex: 1 1 auto;
+  background: linear-gradient(180deg, #f7f1e8 0%, #f3ede3 100%);
 }
 
 .document-panel {
+  position: static;
+  display: flex;
+  flex-direction: column;
   justify-self: start;
   width: fit-content;
   max-width: 100%;
@@ -264,12 +280,6 @@ h2 {
   margin-bottom: 12px;
 }
 
-.preview-title-note {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
-}
-
 h3 {
   margin: 0;
   font-size: 13px;
@@ -317,7 +327,7 @@ fieldset {
   min-width: 0;
 }
 
-label > span,
+label span,
 legend,
 .list-title {
   display: block;
