@@ -35,6 +35,11 @@ const WEEKDAY_PRESET = {
   startTime: "10:00",
   endTime: "13:00",
 };
+const WEEKEND_EARLY_PRESET = {
+  days: [5, 6],
+  startTime: "09:00",
+  endTime: "17:00",
+};
 const WEEKEND_PRESET = {
   days: [5, 6],
   startTime: "10:00",
@@ -60,6 +65,7 @@ const holidayModal = document.querySelector("#holiday-modal");
 const openHolidayModalButton = document.querySelector("#open-holiday-modal-btn");
 const closeHolidayModalButton = document.querySelector("#close-holiday-modal-btn");
 const weekdayPresetButton = document.querySelector("#weekday-preset-button");
+const weekendEarlyPresetButton = document.querySelector("#weekend-early-preset-button");
 const weekendPresetButton = document.querySelector("#weekend-preset-button");
 const holidayDateInput = document.querySelector("#holiday-date");
 const holidayNameInput = document.querySelector("#holiday-name");
@@ -846,6 +852,10 @@ document.addEventListener("keydown", (event) => {
 
 weekdayPresetButton.addEventListener("click", () => {
   applyWorkPreset(WEEKDAY_PRESET);
+});
+
+weekendEarlyPresetButton.addEventListener("click", () => {
+  applyWorkPreset(WEEKEND_EARLY_PRESET);
 });
 
 weekendPresetButton.addEventListener("click", () => {
