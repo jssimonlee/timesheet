@@ -31,7 +31,7 @@ const DEFAULT_WORK_DAYS = [5, 6];
 const DEFAULT_START_TIME = "10:00";
 const DEFAULT_END_TIME = "18:00";
 const WEEKDAY_PRESET = {
-  days: [1, 2, 3, 4],
+  days: [0, 1, 2, 3, 4],
   startTime: "10:00",
   endTime: "13:00",
 };
@@ -73,6 +73,11 @@ const addHolidayButton = document.querySelector("#add-holiday");
 const holidayList = document.querySelector("#holiday-list");
 const documentPreview = document.querySelector("#document-preview");
 const message = document.querySelector("#message");
+const WORK_PRESETS = [
+  { button: weekdayPresetButton, preset: WEEKDAY_PRESET },
+  { button: weekendEarlyPresetButton, preset: WEEKEND_EARLY_PRESET },
+  { button: weekendPresetButton, preset: WEEKEND_PRESET },
+];
 
 function pad2(value) {
   return String(value).padStart(2, "0");
@@ -140,6 +145,27 @@ function setSelectedWorkDays(days) {
 
   for (const input of document.querySelectorAll('input[name="weekday"]')) {
     input.checked = selected.has(Number(input.value));
+  }
+}
+
+function sameWorkDays(left, right) {
+  if (left.length !== right.length) return false;
+  return left.every((day, index) => day === right[index]);
+}
+
+function matchesWorkPreset(preset) {
+  return (
+    sameWorkDays(selectedWorkDays(), preset.days) &&
+    startTimeInput.value === preset.startTime &&
+    endTimeInput.value === preset.endTime
+  );
+}
+
+function syncWorkPresetButtons() {
+  for (const { button, preset } of WORK_PRESETS) {
+    const isActive = matchesWorkPreset(preset);
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
   }
 }
 
@@ -603,6 +629,7 @@ function renderDocumentPreview() {
 }
 
 function renderSummary() {
+  syncWorkPresetButtons();
   renderDocumentPreview();
 }
 
