@@ -207,6 +207,13 @@ h2 {
   width: 100%;
 }
 
+.settings-app-title {
+  font-size: 22px;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+  font-weight: 850;
+}
+
 .settings-header {
   margin-bottom: 0;
 }
