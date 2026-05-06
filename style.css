@@ -212,6 +212,7 @@ h2 {
   line-height: 1.15;
   letter-spacing: -0.03em;
   font-weight: 850;
+  margin-bottom: 6px;
 }
 
 .settings-header {
@@ -280,8 +281,9 @@ h2 {
 }
 
 .panel-kicker-preview {
-  background: rgba(82, 96, 110, 0.08);
-  color: #5f6b78;
+  background: linear-gradient(180deg, rgba(255, 239, 210, 0.98), rgba(255, 222, 163, 0.98));
+  color: #8f4e00;
+  box-shadow: inset 0 0 0 1px rgba(201, 123, 17, 0.22);
 }
 
 .preview-heading-row {
