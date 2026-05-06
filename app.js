@@ -4,7 +4,8 @@ const WEEKDAY_DAYS = new Set([0, 1, 2, 3, 4]);
 const WEEKEND_DAYS = new Set([5, 6]);
 const DAY_COLUMNS = [3, 4, 5, 6, 8, 10, 11, 12, 14, 16];
 const COL_NAMES = ["", "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q"];
-const PREVIEW_DAY_SLOT_WIDTH = 43.17 * 0.8;
+const PREVIEW_SCALE = 0.96;
+const PREVIEW_DAY_SLOT_WIDTH = 43.17 * PREVIEW_SCALE;
 const PREVIEW_HALF_DAY_SLOT_WIDTH = PREVIEW_DAY_SLOT_WIDTH / 2;
 const PREVIEW_COLUMN_WIDTHS = [
   19,

@@ -166,6 +166,7 @@ h2 {
   width: fit-content;
   max-width: 100%;
   height: 100%;
+  min-height: 0;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(243, 245, 247, 0.96));
   border-color: rgba(113, 124, 136, 0.18);
 }
@@ -288,7 +289,7 @@ h2 {
 }
 
 .preview-header {
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 h3 {
@@ -856,16 +857,20 @@ select:focus {
 }
 
 .document-preview-scroll {
-  overflow-x: auto;
-  align-self: center;
+  overflow: auto;
+  align-self: stretch;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
   border: 1px solid rgba(111, 123, 135, 0.22);
   border-radius: 24px;
   background:
     radial-gradient(circle at top left, rgba(255, 255, 255, 0.74), transparent 28%),
     linear-gradient(180deg, #eef2f5 0%, #dfe6eb 100%);
-  padding: 18px;
+  padding: 12px;
   flex: 1 1 auto;
-  width: fit-content;
+  min-height: 0;
+  width: 100%;
   max-width: 100%;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.68);
 }
@@ -876,7 +881,7 @@ select:focus {
   min-width: 0;
   background: #ffffff;
   color: #111827;
-  padding: 12px;
+  padding: 10px;
   margin: 0 auto;
   border-radius: 16px;
   box-shadow: 0 20px 38px rgba(20, 31, 44, 0.14);
@@ -887,14 +892,14 @@ select:focus {
   table-layout: fixed;
   border-collapse: collapse;
   font-family: "GulimChe", "굴림체", "Gulim", "굴림", "Malgun Gothic", sans-serif;
-  font-size: 9px;
+  font-size: 10.8px;
   line-height: 1.2;
 }
 
 .excel-preview-table td {
-  height: 17px;
+  height: 20.4px;
   border: 1px solid #1f2937;
-  padding: 1px 2px;
+  padding: 1px 3px;
   text-align: center;
   vertical-align: middle;
   font-weight: 700;
@@ -903,9 +908,9 @@ select:focus {
 }
 
 .excel-preview-table .title-cell {
-  height: 24px;
+  height: 28.8px;
   border: 0;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 800;
   text-decoration: underline;
 }
@@ -924,7 +929,7 @@ select:focus {
 }
 
 .excel-preview-table .footer-gap-cell {
-  height: 4px;
+  height: 4.8px;
   padding: 0;
   border: 0;
   background: #ffffff;
@@ -968,10 +973,10 @@ select:focus {
 }
 
 .excel-preview-table tr.time-middle-row td {
-  height: 8.5px !important;
+  height: 10.2px !important;
   padding-top: 0;
   padding-bottom: 0;
-  font-size: 8px;
+  font-size: 9.6px;
   line-height: 1;
   border-top: 0;
   border-bottom: 0;
@@ -982,7 +987,7 @@ select:focus {
 }
 
 .excel-preview-table .off-cell {
-  font-size: 12px;
+  font-size: 14.4px;
 }
 
 .excel-preview-table .holiday-cell {
@@ -991,7 +996,7 @@ select:focus {
 }
 
 .excel-preview-table .footer-cell {
-  height: 22px;
+  height: 26.4px;
   border: 0;
   text-align: left;
   font-weight: 700;
@@ -1003,7 +1008,7 @@ select:focus {
 }
 
 .excel-preview-table tr.worker-char-row td {
-  height: 13.6px !important;
+  height: 16.32px !important;
   padding-top: 0;
   padding-bottom: 0;
 }
@@ -1022,11 +1027,11 @@ select:focus {
 }
 
 .excel-preview-table tr.merged-spacer-row {
-  height: 20.4px;
+  height: 24.48px;
 }
 
 .excel-preview-table tr.confirm-row td {
-  height: 40.8px !important;
+  height: 48.96px !important;
 }
 
 .excel-preview-table .seal-cell {
