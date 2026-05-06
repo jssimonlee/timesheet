@@ -31,7 +31,7 @@ const DEFAULT_WORK_DAYS = [5, 6];
 const DEFAULT_START_TIME = "10:00";
 const DEFAULT_END_TIME = "18:00";
 const WEEKDAY_PRESET = {
-  days: [0, 1, 2, 3, 4],
+  days: [1, 2, 3, 4],
   startTime: "10:00",
   endTime: "13:00",
 };

@@ -276,6 +276,17 @@ h2 {
   color: #5f6b78;
 }
 
+.preview-heading-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.preview-note {
+  font-size: 11px;
+}
+
 .preview-header {
   margin-bottom: 12px;
 }
